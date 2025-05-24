@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Vino Bingo - Choose Number</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="telegram:viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+        
+        :root {
+            --primary: #4CAF50;
+            --secondary: #2196F3;
+            --accent: #FFD700;
+            --dark: #0f1a2a;
+            --light: #f8f9fa;
+            --background: #1a2a3a;
+            --danger: #f44336;
+            --bingo-b: #FF5252;
+            --bingo-i: #FFEB3B;
+            --bingo-n: #4CAF50;
+            --bingo-g: #2196F3;
+            --bingo-o: #9C27B0;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--background);
+            color: var(--light);
+            min-height: 100vh;
+            touch-action: manipulation;
+            padding: 15px;
+            height: 100dvh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .back-btn {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--light);
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            z-index: 10;
+        }
+        
+        .game-info {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            text-align: center;
+            animation: fadeIn 0.8s ease;
+        }
+        
+        .game-info h2 {
+            font-size: 1.3rem;
+            margin-bottom: 5px;
+        }
+        
+        .game-info p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .selection-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .number-grid-container {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 15px;
+        }
+        
+        .number-grid {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 2px;
+        }
+        
+        .number {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            aspect-ratio: 1/1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 3.5vw;
+            transition: all 0.3s;
+        }
+        
+        .number.selected {
+            background: var(--primary);
+            transform: scale(0.95);
+            box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+        }
+        
+        .number.taken {
+            background: var(--danger);
+            opacity: 0.5;
+            pointer-events: none;
+        }
+        
+        .game-timer {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            background: var(--dark);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+        
+        .bingo-preview {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            height: 40vh;
+            overflow-y: auto;
+        }
+        
+        .bingo-preview-title {
+            font-size: 1rem;
+            margin-bottom: 10px;
+            color: var(--accent);
+            text-align: center;
+            position: sticky;
+            top: 0;
+            background: var(--background);
+            padding: 5px 0;
+            z-index: 1;
+        }
+        
+        .bingo-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 3px;
+            margin: 0 auto;
+        }
+        
+        .bingo-cell {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            aspect-ratio: 1/1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 2.5vw;
+            min-height: 40px;
+        }
+        
+        .bingo-cell.header {
+            background: transparent;
+            font-weight: 700;
+            font-size: 3vw;
+            position: sticky;
+            top: 40px;
+            z-index: 1;
+        }
+        
+        .bingo-cell.header.b { color: var(--bingo-b); }
+        .bingo-cell.header.i { color: var(--bingo-i); }
+        .bingo-cell.header.n { color: var(--bingo-n); }
+        .bingo-cell.header.g { color: var(--bingo-g); }
+        .bingo-cell.header.o { color: var(--bingo-o); }
+        
+        .bingo-cell.free {
+            background: linear-gradient(135deg, var(--accent), #FFA500);
+            color: var(--dark);
+            font-weight: 700;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @media (min-width: 768px) {
+            .number {
+                font-size: 1.2rem;
+            }
+            
+            .bingo-cell {
+                font-size: 1rem;
+            }
+            
+            .bingo-cell.header {
+                font-size: 1.2rem;
+            }
+            
+            .bingo-preview {
+                height: 35vh;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" as="style">
+</head>
+<body>
+    <button class="back-btn" onclick="window.location.href='game_options.html'">
+        <i class="fas fa-arrow-left"></i>
+    </button>
+    
+    <div class="game-timer">
+        <i class="fas fa-clock"></i>
+        <span id="countdown">90</span>s
+    </div>
+    
+    <div class="game-info">
+        <h2 id="gameAmountDisplay">10 Birr Game</h2>
+        <p>Potential Win: <span id="potentialWinDisplay">90</span> Birr</p>
+    </div>
+    
+    <div class="selection-container">
+        <div class="number-grid-container">
+            <div class="number-grid" id="numberGrid"></div>
+        </div>
+        
+        <div class="bingo-preview">
+            <div class="bingo-preview-title">Your BINGO Card Preview:</div>
+            <div class="bingo-grid" id="bingoPreview">
+                <!-- Bingo card will be generated here -->
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // BINGO column number ranges
+        const B_COLUMN = { min: 1, max: 18 };
+        const I_COLUMN = { min: 19, max: 37 };
+        const N_COLUMN = { min: 38, max: 56 };
+        const G_COLUMN = { min: 57, max: 75 };
+        const O_COLUMN = { min: 76, max: 88 };
+
+        // Get game amount from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const gameAmount = urlParams.get('amount') || 10;
+        const gameId = urlParams.get('gameId') || '';
+        
+        // Set game info display
+        document.getElementById('gameAmountDisplay').textContent = `${gameAmount} Birr Game`;
+        document.getElementById('potentialWinDisplay').textContent = (gameAmount * 8 * 0.9).toFixed(1);
+        
+        // Selected number and taken numbers
+        let selectedNumber = null;
+        const takenNumbers = new Set();
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            // Generate number grid (1-100)
+            const numberGrid = document.getElementById('numberGrid');
+            for (let i = 1; i <= 100; i++) {
+                const num = document.createElement('div');
+                num.className = 'number';
+                num.textContent = i;
+                num.dataset.number = i;
+                num.onclick = () => handleNumberSelect(i);
+                numberGrid.appendChild(num);
+            }
+            
+            // Start with a random selection
+            const randomNum = Math.floor(Math.random() * 100) + 1;
+            handleNumberSelect(randomNum);
+            
+            // Start timer
+            startCountdown();
+            
+            // Telegram WebApp expand
+            if (window.Telegram && Telegram.WebApp) {
+                Telegram.WebApp.expand();
+                // Set theme params
+                const theme = Telegram.WebApp.colorScheme;
+                if (theme === 'dark') {
+                    document.documentElement.style.setProperty('--background', '#0f1a2a');
+                    document.documentElement.style.setProperty('--light', '#f8f9fa');
+                } else {
+                    document.documentElement.style.setProperty('--background', '#f8f9fa');
+                    document.documentElement.style.setProperty('--light', '#0f1a2a');
+                }
+            }
+        });
+        
+        // Handle number selection
+        function handleNumberSelect(number) {
+            // Don't respond if number is already taken
+            if (takenNumbers.has(number)) return;
+            
+            // Deselect previous number if any
+            if (selectedNumber) {
+                document.querySelector(`.number[data-number="${selectedNumber}"]`).classList.remove('selected');
+                takenNumbers.delete(selectedNumber);
+            }
+            
+            // Select new number
+            selectedNumber = number;
+            takenNumbers.add(number);
+            document.querySelector(`.number[data-number="${number}"]`).classList.add('selected');
+            
+            // Generate BINGO card
+            generateBingoCard(number);
+            
+            // Vibrate on selection (mobile)
+            if ('vibrate' in navigator) navigator.vibrate(30);
+        }
+        
+        // Generate BINGO card based on selected number (deterministic)
+        function generateBingoCard(seed) {
+            const bingoPreview = document.getElementById('bingoPreview');
+            bingoPreview.innerHTML = '';
+            
+            // Add headers
+            ['B', 'I', 'N', 'G', 'O'].forEach((letter, index) => {
+                const header = document.createElement('div');
+                header.className = `bingo-cell header ${letter.toLowerCase()}`;
+                header.textContent = letter;
+                bingoPreview.appendChild(header);
+            });
+            
+            // Generate numbers for each column
+            const columns = [
+                { letter: 'B', range: B_COLUMN },
+                { letter: 'I', range: I_COLUMN },
+                { letter: 'N', range: N_COLUMN },
+                { letter: 'G', range: G_COLUMN },
+                { letter: 'O', range: O_COLUMN }
+            ];
+            
+            for (let row = 0; row < 5; row++) {
+                columns.forEach((col, colIndex) => {
+                    if (row === 2 && colIndex === 2) {
+                        // Free space
+                        const free = document.createElement('div');
+                        free.className = 'bingo-cell free';
+                        free.textContent = 'FREE';
+                        bingoPreview.appendChild(free);
+                        return;
+                    }
+                    
+                    // Deterministic number based on seed
+                    const positionHash = (seed + row * 5 + colIndex) % (col.range.max - col.range.min + 1);
+                    const number = col.range.min + positionHash;
+                    
+                    const cell = document.createElement('div');
+                    cell.className = 'bingo-cell';
+                    cell.textContent = number;
+                    bingoPreview.appendChild(cell);
+                });
+            }
+        }
+        
+        // Countdown timer
+        function startCountdown() {
+            let timeLeft = 90;
+            const timerElement = document.getElementById('countdown');
+            
+            const countdown = setInterval(() => {
+                timeLeft--;
+                timerElement.textContent = timeLeft;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(countdown);
+                    startGame();
+                }
+            }, 1000);
+        }
+        
+        // Start game with selected number
+        function startGame() {
+            if (selectedNumber) {
+                // Generate final BINGO numbers
+                const bingoNumbers = {
+                    B: getColumnNumbers(selectedNumber, 'B', B_COLUMN),
+                    I: getColumnNumbers(selectedNumber, 'I', I_COLUMN),
+                    N: getColumnNumbers(selectedNumber, 'N', N_COLUMN),
+                    G: getColumnNumbers(selectedNumber, 'G', G_COLUMN),
+                    O: getColumnNumbers(selectedNumber, 'O', O_COLUMN)
+                };
+                
+                // Set FREE space
+                bingoNumbers.N[2] = 'FREE';
+                
+                // Redirect to game page
+                window.location.href = `bingo_game.html?amount=${gameAmount}&number=${selectedNumber}&gameId=${gameId}&numbers=${encodeURIComponent(JSON.stringify(bingoNumbers))}`;
+            }
+        }
+        
+        // Get deterministic numbers for a column
+        function getColumnNumbers(seed, colLetter, range) {
+            const numbers = [];
+            for (let i = 0; i < 5; i++) {
+                if (colLetter === 'N' && i === 2) {
+                    numbers.push('FREE');
+                    continue;
+                }
+                const positionHash = (seed + i * 5 + ['B','I','N','G','O'].indexOf(colLetter)) % (range.max - range.min + 1);
+                numbers.push(range.min + positionHash);
+            }
+            return numbers;
+        }
+    </script>
+</body>
+</html>
